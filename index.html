@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Real Estate</title>
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(25, 1fr);
+      gap: 0;
+      /* max-width: 600px; */
+      /* margin: 30px auto; */
+    }
+
+    .tile {
+      width: 100%;
+      padding-top: 100%;
+      position: relative;
+      background-color: #f0f0f0;
+      border: 2px solid #ccc;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .tile:hover {
+      border-color: #000;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid" id="grid"></div>
+  <input type="file" id="imageInput" accept="image/*" />
+
+  <script>
+    const grid = document.getElementById("grid");
+    const imageInput = document.getElementById("imageInput");
+
+    let selectedTile = null;
+    const tileData = []; // Stores { image, link, locked } for each tile
+
+    for (let i = 0; i < 1000; i++) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.dataset.index = i;
+
+      tile.addEventListener("click", () => {
+        const index = tile.dataset.index;
+        if (tileData[index]?.locked) {
+          // Redirect if already set
+          if (tileData[index].link) {
+            window.open(tileData[index].link, "_blank");
+          }
+        } else {
+          selectedTile = tile;
+          imageInput.click();
+        }
+      });
+
+      grid.appendChild(tile);
+      tileData.push({ image: null, link: null, locked: false });
+    }
+
+    imageInput.addEventListener("change", (event) => {
+      if (!selectedTile) return;
+      const file = event.target.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const index = selectedTile.dataset.index;
+          const imageUrl = reader.result;
+          const link = prompt("Enter the link for this tile:");
+
+          tileData[index] = {
+            image: imageUrl,
+            link: link,
+            locked: true
+          };
+
+          selectedTile.style.backgroundImage = `url('${imageUrl}')`;
+        };
+
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>
