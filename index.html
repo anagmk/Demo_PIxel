@@ -5,23 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Digital Real Estate</title>
   <style>
-    .grid {
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #fafafa;
+      font-family: sans-serif;
+    }
+
+    .outer-grid {
       display: grid;
-      grid-template-columns: repeat(25, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+    }
+
+    .group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
       gap: 0;
-      /* max-width: 600px; */
-      /* margin: 30px auto; */
+      aspect-ratio: 1 / 1;
+      width: 100%;
     }
 
     .tile {
       width: 100%;
-      padding-top: 100%;
-      position: relative;
+      aspect-ratio: 1 / 1;
       background-color: #f0f0f0;
-      border: 2px solid #ccc;
-      cursor: pointer;
+      border: 1px solid #ccc;
       background-size: cover;
       background-position: center;
+      cursor: pointer;
+      box-sizing: border-box;
     }
 
     .tile:hover {
@@ -35,36 +49,45 @@
 </head>
 <body>
 
-  <div class="grid" id="grid"></div>
+  <div class="outer-grid" id="outerGrid"></div>
   <input type="file" id="imageInput" accept="image/*" />
 
   <script>
-    const grid = document.getElementById("grid");
+    const outerGrid = document.getElementById("outerGrid");
     const imageInput = document.getElementById("imageInput");
-
     let selectedTile = null;
-    const tileData = []; // Stores { image, link, locked } for each tile
+    const tileData = [];
 
-    for (let i = 0; i < 1000; i++) {
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.dataset.index = i;
+    let tileIndex = 0;
+    const totalGroups = Math.floor(1000 / 4); // 4 tiles per group
 
-      tile.addEventListener("click", () => {
-        const index = tile.dataset.index;
-        if (tileData[index]?.locked) {
-          // Redirect if already set
-          if (tileData[index].link) {
-            window.open(tileData[index].link, "_blank");
+    for (let g = 0; g < totalGroups; g++) {
+      const group = document.createElement("div");
+      group.className = "group";
+
+      for (let t = 0; t < 4; t++) {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.dataset.index = tileIndex;
+
+        tile.addEventListener("click", () => {
+          const index = tile.dataset.index;
+          if (tileData[index]?.locked) {
+            if (tileData[index].link) {
+              window.open(tileData[index].link, "_blank");
+            }
+          } else {
+            selectedTile = tile;
+            imageInput.click();
           }
-        } else {
-          selectedTile = tile;
-          imageInput.click();
-        }
-      });
+        });
 
-      grid.appendChild(tile);
-      tileData.push({ image: null, link: null, locked: false });
+        tileData.push({ image: null, link: null, locked: false });
+        group.appendChild(tile);
+        tileIndex++;
+      }
+
+      outerGrid.appendChild(group);
     }
 
     imageInput.addEventListener("change", (event) => {
